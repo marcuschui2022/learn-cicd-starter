@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"embed"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -70,7 +72,17 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer f.Close()
+		//defer f.Close()
+		defer func(f fs.File) {
+			//err := f.Close()
+			//if err != nil {
+			//	log.Println(err)
+			//}
+			if err := f.Close(); err != nil {
+				log.Println(err)
+			}
+
+		}(f)
 		if _, err := io.Copy(w, f); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -89,8 +101,9 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
+		Addr:              ":" + port,
+		Handler:           router,
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	log.Printf("Serving on port: %s\n", port)
