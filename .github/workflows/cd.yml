@@ -11,6 +11,17 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.0'
+
+      - name: Build app
+        run: ./scripts/buildprod.sh
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
@@ -21,15 +32,3 @@ jobs:
 
       - name: 'Use gcloud CLI'
         run: 'gcloud builds submit --tag us-central1-docker.pkg.dev/notely-451716/notely-ar-repo/notely:latest .'
-
-#    steps:
-#      - name: Check out code
-#        uses: actions/checkout@v4
-#
-#      - name: Set up Go
-#        uses: actions/setup-go@v5
-#        with:
-#          go-version: '1.23.0'
-#
-#      - name: Build app
-#        run: ./scripts/buildprod.sh
